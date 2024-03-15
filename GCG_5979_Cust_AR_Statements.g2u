@@ -1,0 +1,446 @@
+Program.Sub.ScreenSU.Start
+Gui.Form..Create
+Gui.Form..Size(5805,3945)
+Gui.Form..MinX(0)
+Gui.Form..MinY(0)
+Gui.Form..Position(0,0)
+Gui.Form..BackColor(-2147483633)
+Gui.Form..MousePointer(0)
+Gui.Form..Sizeable(False)
+Gui.Form..Event(UnLoad,Unload)
+Gui.Form..MaxButton(False)
+Gui.Form..Caption("AR STATEMENTS BY DUE DATE")
+Gui.Form.lbl1.Create(Label,"Aging Date",True,1935,255,0,255,255,True,0,"Arial",8,-2147483633,0)
+Gui.Form.dtpAging.Create(DatePicker)
+Gui.Form.dtpAging.Size(1935,285)
+Gui.Form.dtpAging.Position(255,480)
+Gui.Form.txtBegCust.Create(TextBox,"",True,1935,300,0,255,1335,True,0,"Arial",8,-2147483643,1)
+Gui.Form.txtEndCust.Create(TextBox,"",True,1935,300,0,3015,1335,True,0,"Arial",8,-2147483643,1)
+Gui.Form.chkAllCust.Create(CheckBox)
+Gui.Form.chkAllCust.Size(1560,360)
+Gui.Form.chkAllCust.Position(255,1890)
+Gui.Form.chkAllCust.Caption("All Customers")
+Gui.Form.chkAllCust.Event(Click,CheckAll)
+Gui.Form.lbl2.Create(Label,"Beginning Customer",True,1935,255,0,255,1110,True,0,"Arial",8,-2147483633,0)
+Gui.Form.lbl3.Create(Label,"Ending Customer",True,1935,255,0,3015,1110,True,0,"Arial",8,-2147483633,0)
+Gui.Form.cmdFromBrow.Create(Button)
+Gui.Form.cmdFromBrow.Size(375,375)
+Gui.Form.cmdFromBrow.Position(2280,1290)
+Gui.Form.cmdFromBrow.Caption("^")
+Gui.Form.cmdFromBrow.Event(Click,CustFromBrow)
+Gui.Form.cmdToBrow.Create(Button)
+Gui.Form.cmdToBrow.Size(375,375)
+Gui.Form.cmdToBrow.Position(5040,1290)
+Gui.Form.cmdToBrow.Caption("^")
+Gui.Form.cmdToBrow.Event(Click,CustToBrow)
+Gui.Form.cmdOK.Create(Button)
+Gui.Form.cmdOK.Size(1470,375)
+Gui.Form.cmdOK.Position(255,2805)
+Gui.Form.cmdOK.Caption("OK")
+Gui.Form.cmdOK.Event(Click,DataProcess)
+Gui.Form.chkPrintCountry.Create(CheckBox)
+Gui.Form.chkPrintCountry.Enabled(False)
+Gui.Form.chkPrintCountry.Size(1560,360)
+Gui.Form.chkPrintCountry.Position(255,2325)
+Gui.Form.chkPrintCountry.Caption("Print Country")
+Gui.Form.chkPrintCountry.Value(1)
+Program.Sub.ScreenSU.End
+
+Program.Sub.Preflight.Start
+Program.Sub.Preflight.End
+
+Program.Sub.Main.Start
+'This project was created for Hydra-Flex. We are generating a new AR statements report for them.
+'This will work similarly to Accounts Receivable > Reports > Statements. When the project is initialized, we will be populating a screen which has a 
+
+'Report ID of the original project is 562.
+
+Gui.Form..Show
+
+Program.Sub.Main.End
+
+Program.Sub.Unload.Start
+F.Intrinsic.Control.End
+Program.Sub.Unload.End
+
+Program.Sub.CustFromBrow.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	V.Local.sCustomer.Declare(String, "")
+	
+	F.Intrinsic.UI.Browser(205, "", V.Local.sCustomer)
+		
+	F.Intrinsic.Control.If(V.Local.sCustomer, <>, "***CANCEL***")
+		F.Intrinsic.String.Split(V.Local.sCustomer, "*!*", V.Local.sCustomer)
+		Gui.Form.txtBegCust.Text(V.Local.sCustomer(0).Trim)
+		
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}", V.Ambient.ScriptPath, V.Ambient.Newline, V.Ambient.CurrentSubroutine, V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+F.Intrinsic.Control.EndTry
+Program.Sub.CustFromBrow.End
+
+Program.Sub.CustToBrow.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	V.Local.sCustomer.Declare(String, "")
+	
+	F.Intrinsic.UI.Browser(205, "", V.Local.sCustomer)
+	
+	F.Intrinsic.Control.If(V.Local.sCustomer, <>, "***CANCEL***")
+		F.Intrinsic.String.Split(V.Local.sCustomer, "*!*", V.Local.sCustomer)
+		F.Intrinsic.Control.If(V.Local.sCustomer(0).Trim, <, V.Screen.Form!txtBegCust.Text.Trim)
+			F.Intrinsic.UI.Msgbox("Please select a customer after the beginning customer", "Customer Selection error")
+		F.Intrinsic.Control.Else
+			Gui.Form.txtEndCust.Text(V.Local.sCustomer(0).Trim)
+		F.Intrinsic.Control.EndIf
+	F.Intrinsic.Control.EndIf
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}", V.Ambient.ScriptPath, V.Ambient.Newline, V.Ambient.CurrentSubroutine, V.Ambient.ErrorNumber, V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+F.Intrinsic.Control.EndTry
+Program.Sub.CustToBrow.End
+
+Program.Sub.DataProcess.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	V.Local.sFilter.Declare(String, "")
+	V.Local.sSql.Declare(String, "")
+	V.Local.sCustomer.Declare(String, "")
+	V.Local.iCustomer.Declare(Long, 0)
+	V.Local.dAging.Declare(Date, V.Ambient.Date)
+	V.Local.dThirty.Declare(Date, V.Ambient.Date)
+	V.Local.dSixty.Declare(Date, V.Ambient.Date)
+	V.Local.fCurrent.Declare(Float, 0.00)
+	V.Local.fThirty.Declare(Float, 0.00)
+	V.Local.fSixty.Declare(Float, 0.00)
+	V.Local.fMore.Declare(Float, 0.00)
+	V.Local.fCharges.Declare(Float, 0.00)
+	V.Local.fCredits.Declare(Float, 0.00)
+	
+	F.Intrinsic.Control.If(V.Screen.Form!chkAllCust.Value, =, 0)
+		F.Intrinsic.Control.If(V.Screen.Form!txtBegCust.Text.Trim, =, "")
+			F.Intrinsic.UI.Msgbox("Please fill in customer text boxes.", "Need more information")
+			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.ElseIf(V.Screen.Form!txtEndCust.Text.Trim, =, "")
+			F.Intrinsic.UI.Msgbox("Please fill in customer text boxes.", "Need more information")
+			F.Intrinsic.Control.ExitSub
+		F.Intrinsic.Control.EndIf
+		'Build the filter
+		F.Intrinsic.String.Build("where CUSTOMER >= '{0}' and CUSTOMER <= '{1}'", V.Screen.Form!txtBegCust.Text.Trim, V.Screen.Form!txtEndCust.Text.Trim, V.Local.sFilter)
+	F.Intrinsic.Control.Else
+		V.Local.sFilter.Set("")
+	F.Intrinsic.Control.EndIf
+	
+	Gui.Form..Enabled(False)
+	
+	'We are going to pull all data first, then determine what goes where through dictionaries and dataviews
+	V.Local.dAging.Set(V.Screen.Form!dtpAging.Value)
+'	F.Intrinsic.String.Build("Select RTRIM(LTRIM(CUSTOMER)) as CUSTOMER, RTRIM(LTRIM(INVOICE)) as INVOICE, BATCH_CODE, BATCH_LINE, RTRIM(LTRIM(REFERENCE)) as REFERENCE, DATE_INVOICE, DATE_TRANSACTION, DUE_DATE, AMT_TRANS_TOTAL, GL_ACCOUNT, AMT_INVOICE from V_AR_OPEN_ITEMS {0}", V.Local.sFilter, V.Local.sSQL)
+	F.Intrinsic.String.Build("Select RTRIM(LTRIM(CUSTOMER)) as CUSTOMER, INVOICE, BATCH_CODE, BATCH_LINE, REFERENCE, DATE_INVOICE, DATE_TRANSACTION, DUE_DATE, AMT_TRANS_TOTAL, GL_ACCOUNT, AMT_INVOICE from V_AR_OPEN_ITEMS {0}", V.Local.sFilter, V.Local.sSQL)
+	
+	F.ODBC.Connection!conx.OpenCompanyConnection
+	
+	F.Data.DataTable.CreateFromSQL("dtAllAging", "conx", V.Local.sSql, True)
+	
+	F.Intrinsic.Control.If(V.DataTable.dtAllAging.RowCount, =, 0)
+		F.Data.DataTable.Close("dtAllAging")
+		F.ODBC.Connection!conx.Close
+		F.Intrinsic.UI.Msgbox("No data was found for the given criteria. Please make a different selection.", "NO DATA FOUND")
+		Gui.Form..Enabled(True)
+		F.Intrinsic.Control.ExitSub
+	F.Intrinsic.Control.EndIf
+	
+	F.Data.DataTable.AddExpressionColumn("dtAllAging", "CustInv", "String", "[Customer] + [Invoice]")
+	
+	'The AR_OPEN_ITEMS will store datat for invoices even if they have been paid in full. The customer does not want to see stuff that has been paid, so we are going to see what invoices have a balance of zero and leave them out
+	F.Data.Dictionary.CreateFromSQL("dicZeroed", "conx", "Select RTRIM(LTRIM(CUSTOMER)) + INVOICE as InvCustKey, SUM(AMT_INVOICE) as OWED from V_AR_OPEN_ITEMS group by INVOICE, CUSTOMER order by CUSTOMER, INVOICE")
+	F.Data.Dictionary.SetDefaultReturn("dicZeroed", "0.00")
+	
+	F.Data.DataTable.AddColumn("dtAllAging", "INV_AMT_OWED", "Float")
+	
+	F.Data.DataTable.FillFromDictionary("dtAllAging", "dicZeroed", "CustInv", "INV_AMT_OWED")
+	
+	F.Data.Dictionary.Close("dicZeroed")
+	
+	F.Data.DataView.Create("dtAllAging", "dvCorrectData", 22, "[INV_AMT_OWED] <> 0.00", "")
+	
+	F.Data.DataView.ToDataTable("dtAllAging", "dvCorrectData", "dtStatements", True)
+	
+	F.Data.DataTable.AddExpressionColumn("dtStatements", "CHARGES", "Float", "IIF([AMT_INVOICE] > 0, [AMT_INVOICE], 0)")
+	F.Data.DataTable.AddExpressionColumn("dtStatements", "CREDITS", "Float", "IIF([AMT_INVOICE] < 0, [AMT_INVOICE], 0)")
+	
+	'This is what we will use to calculate the aging buckets.
+	F.Data.DataView.ToDataTableDistinct("dtAllAging", "dvCorrectData", "dtForBuckets", "CUSTOMER*!*INVOICE*!*INV_AMT_OWED*!*DATE_TRANSACTION*!*DUE_DATE*!*BATCH_CODE*!*REFERENCE", True)
+	F.Data.DataView.ToDataTableDistinct("dtAllAging", "dvCorrectData", "dtAging", "CUSTOMER", True)
+	
+	F.Data.DataTable.AddColumn("dtAging", "CURRENT", "Float")
+	F.Data.DataTable.AddColumn("dtAging", "THIRTY", "Float")
+	F.Data.DataTable.AddColumn("dtAging", "SIXTY", "Float")
+	F.Data.DataTable.AddColumn("dtAging", "MORE", "Float")
+	F.Data.DataTable.AddColumn("dtAging", "TOT_CHARGES", "Float")
+	F.Data.DataTable.AddColumn("dtAging", "TOT_CREDITS", "Float")
+	
+	'Calculate the dates for the buckets:
+	F.Intrinsic.Date.DateAdd("D", -30, V.Local.dAging, V.Local.dThirty)
+	F.Intrinsic.Date.DateAdd("D", -60, V.Local.dAging, V.Local.dSixty)
+	
+	F.Intrinsic.Control.For(V.Local.iCustomer, 0, V.DataTable.dtAging.RowCount--, 1)
+		V.Local.sCustomer.Set(V.DataTable.dtAging(V.Local.iCustomer).CUSTOMER!FieldValTrim)
+		'We are going to calculate the buckets per customer. Current is anything with a due date of today or above
+		F.Intrinsic.String.Build("[CUSTOMER] = '{0}' AND [DUE_DATE] >= '{1}'", V.Local.sCustomer, V.Local.dAging, V.Local.sFilter)
+		F.Data.DataTable.Compute("dtForBuckets", "SUM(INV_AMT_OWED)", V.Local.sFilter, V.Local.fCurrent)
+		
+		'Thirty is anything that has a duedate of yesterday up to thirty days ago
+		F.Intrinsic.String.Build("[CUSTOMER] = '{0}' AND [DUE_DATE] < '{1}' AND [DUE_DATE] >= '{2}'", V.Local.sCustomer, V.Local.dAging, V.Local.dThirty, V.Local.sFilter)
+		F.Data.DataTable.Compute("dtForBuckets", "SUM(INV_AMT_OWED)", V.Local.sFilter, V.Local.fThirty)
+		
+		'Sixty is anything that has a due date from thirty + 1 to sixty days ago
+		F.Intrinsic.String.Build("[CUSTOMER] = '{0}' AND [DUE_DATE] < '{1}' AND [DUE_DATE] >= '{2}'", V.Local.sCustomer, V.Local.dThirty, V.Local.dSixty, V.Local.sFilter)
+		F.Data.DataTable.Compute("dtForBuckets", "SUM(INV_AMT_OWED)", V.Local.sFilter, V.Local.fSixty)
+		
+		'More is anything that has a due date from sixty +1 or more
+		F.Intrinsic.String.Build("[CUSTOMER] = '{0}' AND [DUE_DATE] < '{1}'", V.Local.sCustomer, V.Local.dSixty, V.Local.sFilter)
+		F.Data.DataTable.Compute("dtForBuckets", "SUM(INV_AMT_OWED)", V.Local.sFilter, V.Local.fMore)
+		
+		
+		F.Intrinsic.String.Build("[CUSTOMER] = '{0}' AND [INV_AMT_OWED] > 0", V.Local.sCustomer, V.Local.sFilter)
+		F.Data.DataTable.Compute("dtForBuckets", "SUM(INV_AMT_OWED)", V.Local.sFilter, V.Local.fCharges)
+		
+		F.Intrinsic.String.Build("[CUSTOMER] = '{0}' AND [INV_AMT_OWED] < 0", V.Local.sCustomer, V.Local.sFilter)
+		F.Data.DataTable.Compute("dtForBuckets", "SUM(INV_AMT_OWED)", V.Local.sFilter, V.Local.fCredits)
+'		F.Intrinsic.Math.Sub(0, V.Local.fCredits, V.Local.fCredits)
+		
+		F.Data.DataTable.SetValue("dtAging", V.Local.iCustomer, "CURRENT", V.Local.fCurrent, "THIRTY", V.Local.fThirty, "SIXTY", V.Local.fSixty, "MORE", V.Local.fMore, "TOT_CHARGES", V.Local.fCharges, "TOT_CREDITS", V.Local.fCredits)
+		
+	F.Intrinsic.Control.Next(V.Local.iCustomer)
+	
+	F.Data.DataTable.Close("dtForBuckets")
+	
+	F.Data.DataTable.AddColumn("dtStatements", "TOT_CURRENT", "Float")
+	F.Data.DataTable.AddColumn("dtStatements", "TOT_THIRTY", "Float")
+	F.Data.DataTable.AddColumn("dtStatements", "TOT_SIXTY", "Float")
+	F.Data.DataTable.AddColumn("dtStatements", "TOT_MORE", "Float")
+	F.Data.DataTable.AddColumn("dtStatements", "TOT_CHARGES", "Float")
+	F.Data.DataTable.AddColumn("dtStatements", "TOT_CREDITS", "Float")
+	
+	'Filling in the bucket value for the information on the table
+	F.Data.Dictionary.CreateFromDataTable("dicCurrent", "dtAging", "CUSTOMER", "CURRENT")
+	F.Data.Dictionary.SetDefaultReturn("dicCurrent", 0.00)
+	
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicCurrent", "CUSTOMER", "TOT_CURRENT")
+	F.Data.Dictionary.Close("dicCurrent")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicThirty", "dtAging", "CUSTOMER", "THIRTY")
+	F.Data.Dictionary.SetDefaultReturn("dicThirty", 0.00)
+	
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicThirty", "CUSTOMER", "TOT_THIRTY")
+	F.Data.Dictionary.Close("dicThirty")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicSixty", "dtAging", "CUSTOMER", "SIXTY")
+	F.Data.Dictionary.SetDefaultReturn("dicSixty", 0.00)
+	
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicSixty", "CUSTOMER", "TOT_SIXTY")
+	F.Data.Dictionary.Close("dicSixty")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicMore", "dtAging", "CUSTOMER", "MORE")
+	F.Data.Dictionary.SetDefaultReturn("dicMore", 0.00)
+	
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicMore", "CUSTOMER", "TOT_MORE")
+	F.Data.Dictionary.Close("dicMore")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicCharges", "dtAging", "CUSTOMER", "TOT_CHARGES")
+	F.Data.Dictionary.SetDefaultReturn("dicCharges", 0.00)
+	
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicCharges", "CUSTOMER", "TOT_CHARGES")
+	F.Data.Dictionary.Close("dicCharges")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicCredits", "dtAging", "CUSTOMER", "TOT_CREDITS")
+	F.Data.Dictionary.SetDefaultReturn("dicCredits", 0.00)
+	
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicCredits", "CUSTOMER", "TOT_CREDITS")
+	F.Data.Dictionary.Close("dicCredits")
+	
+	F.Data.DataTable.AddExpressionColumn("dtStatements", "TOT_DUE", "Float", "[TOT_CURRENT] + [TOT_THIRTY] + [TOT_SIXTY] + [TOT_MORE]")
+	
+	'Now add all the non-calculation fields
+	F.Data.DataTable.AddColumn("dtStatements", "DATE_CALC", "Date", V.Ambient.Now)
+	F.Data.DataTable.AddColumn("dtStatements", "TRANS_TYPE", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_NAME", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_ADDRESS1", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_ADDRESS2", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_ADDRESS3", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_ADDRESS4", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_ADDRESS5", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "INTL", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_CITY", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_STATE", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_ZIP", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "BILL_COUNTRY", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "ATTN", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "PHONE", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "FAX", "String")
+	
+	F.Data.Dictionary.Create("dicType")
+	F.Data.Dictionary.AddItem("dicType", "10", "Invoice")
+	F.Data.Dictionary.AddItem("dicType", "11", "Cash Receipt")
+	F.Data.Dictionary.AddItem("dicType", "12", "Credit Memo")
+	F.Data.Dictionary.AddItem("dicType", "13", "Adjustment")
+	F.Data.Dictionary.AddItem("dicType", "15", "Finance Charge")
+	F.Data.Dictionary.SetDefaultReturn("dicType", "")
+	
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicType", "BATCH_CODE", "TRANS_TYPE")
+	
+	F.Data.Dictionary.Close("dicType")
+	
+	F.Data.DataTable.CreateFromSQL("dtCustInfo1", "conx", "Select CUSTOMER, NAME_CUSTOMER, ADDRESS1, ADDRESS2, CITY, STATE, ZIP, COUNTRY, ATTENTION, INTL_ADDR, TELEPHONE From V_CUSTOMER_MASTER", True)
+	
+	F.Data.Dictionary.CreateFromDataTable("dicName", "dtCustInfo1", "CUSTOMER", "NAME_CUSTOMER")
+	F.Data.Dictionary.SetDefaultReturn("dicName", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicName", "CUSTOMER", "BILL_NAME")
+	F.Data.Dictionary.Close("dicName")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicAddy1", "dtCustInfo1", "CUSTOMER", "ADDRESS1")
+	F.Data.Dictionary.SetDefaultReturn("dicAddy1", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicAddy1", "CUSTOMER", "BILL_ADDRESS1")
+	F.Data.Dictionary.Close("dicAddy1")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicAddy2", "dtCustInfo1", "CUSTOMER", "ADDRESS2")
+	F.Data.Dictionary.SetDefaultReturn("dicAddy2", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicAddy2", "CUSTOMER", "BILL_ADDRESS2")
+	F.Data.Dictionary.Close("dicAddy2")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicINTL", "dtCustInfo1", "CUSTOMER", "INTL_ADDR")
+	F.Data.Dictionary.SetDefaultReturn("dicINTL", "N")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicINTL", "CUSTOMER", "INTL")
+	F.Data.Dictionary.Close("dicINTL")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicCity", "dtCustInfo1", "CUSTOMER", "CITY")
+	F.Data.Dictionary.SetDefaultReturn("dicCity", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicCity", "CUSTOMER", "BILL_CITY")
+	F.Data.Dictionary.Close("dicCity")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicState", "dtCustInfo1", "CUSTOMER", "STATE")
+	F.Data.Dictionary.SetDefaultReturn("dicState", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicState", "CUSTOMER", "BILL_STATE")
+	F.Data.Dictionary.Close("dicState")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicZIP", "dtCustInfo1", "CUSTOMER", "ZIP")
+	F.Data.Dictionary.SetDefaultReturn("dicZIP", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicZIP", "CUSTOMER", "BILL_ZIP")
+	F.Data.Dictionary.Close("dicZIP")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicCountry", "dtCustInfo1", "CUSTOMER", "COUNTRY")
+	F.Data.Dictionary.SetDefaultReturn("dicCountry", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicCountry", "CUSTOMER", "BILL_COUNTRY")
+	F.Data.Dictionary.Close("dicCountry")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicATTN", "dtCustInfo1", "CUSTOMER", "ATTENTION")
+	F.Data.Dictionary.SetDefaultReturn("dicATTN", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicATTN", "CUSTOMER", "ATTN")
+	F.Data.Dictionary.Close("dicATTN")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicPhone", "dtCustInfo1", "CUSTOMER", "TELEPHONE")
+	F.Data.Dictionary.SetDefaultReturn("dicPhone", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicPhone", "CUSTOMER", "PHONE")
+	F.Data.Dictionary.Close("dicPhone")
+	
+	F.Data.DataTable.Close("dtCustInfo1")
+	
+	F.Data.Dictionary.CreateFromSQL("dicFax", "conx", "Select CUSTOMER, FAX_NUMBER from V_CUSTOMER_SALES")
+	F.Data.Dictionary.SetDefaultReturn("dicFax", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicFax", "CUSTOMER", "FAX")
+	F.Data.Dictionary.Close("dicFax")
+	
+	F.Data.DataTable.CreateFromSQL("dtCustInfo2", "conx", "Select CUSTOMER, ADDRESS3, ADDRESS4, ADDRESS5 from V_CUSTOMER_INTL", True)
+	
+	F.Data.Dictionary.CreateFromDataTable("dicAddy3", "dtCustInfo2", "CUSTOMER", "ADDRESS3")
+	F.Data.Dictionary.SetDefaultReturn("dicAddy3", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicAddy3", "CUSTOMER", "BILL_ADDRESS3")
+	F.Data.Dictionary.Close("dicAddy3")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicAddy4", "dtCustInfo2", "CUSTOMER", "ADDRESS4")
+	F.Data.Dictionary.SetDefaultReturn("dicAddy4", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicAddy4", "CUSTOMER", "BILL_ADDRESS4")
+	F.Data.Dictionary.Close("dicAddy4")
+	
+	F.Data.Dictionary.CreateFromDataTable("dicAddy5", "dtCustInfo2", "CUSTOMER", "ADDRESS5")
+	F.Data.Dictionary.SetDefaultReturn("dicAddy5", "")
+	F.Data.DataTable.FillFromDictionary("dtStatements", "dicAddy5", "CUSTOMER", "BILL_ADDRESS5")
+	F.Data.Dictionary.Close("dicAddy5")
+	
+	F.Data.DataTable.Close("dtCustInfo2")
+	
+	F.Intrinsic.Control.CallSub(PrintStatements)
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.DataProcess.End
+
+Program.Sub.PrintStatements.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	V.Local.sMapping.Declare(String, "")
+	V.Local.sSql.Declare(String, "")
+	V.Local.iBIRunID.Declare(Long, 0)
+	V.Local.iReportID.Declare(Long, 0)
+	V.Local.iLogID.Declare(Long, 0)
+	V.Local.iReturn.Declare(Long, 0)
+	
+	'All of the information that we need is in table dtStatements. We are just going to add the BI stuff and save it, then print the reports.
+	F.Global.BI.GetRunID(V.Local.iBIRunID)
+	
+	F.Global.BI.GetIDFromName("GCG_5979_AR_STMT.rpt",V.Local.iReportID)
+	
+	F.Global.BI.StartLogging(V.Local.iBIRunID, V.Local.iReportID, 0, "", V.Local.iLogid)
+	
+	F.Intrinsic.String.Build("Delete from GCG_5979_AR_STMNT where TERMINAL_NO = '{0}'", V.Caller.Terminal, V.Local.sSql)
+	F.ODBC.Connection!conx.Execute(V.Local.sSql)
+	
+	F.Data.DataTable.AddColumn("dtStatements", "BI_RUNID", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "TERMINAL", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "RPTID", "String")
+	F.Data.DataTable.AddColumn("dtStatements", "CURR_SYMBOL", "String")
+	
+	F.Data.DataTable.SetValue("dtStatements", -1, "BI_RUNID", V.Local.iBIRunID, "TERMINAL", V.Caller.Terminal, "RPTID", V.Local.iReportID, "CURR_SYMBOL", "$")
+	
+	V.Local.sMapping.Set("BI_RUNID@!@BI_RUNID*!*TERMINAL@!@TERMINAL_NO*!*RPTID@!@RPTID*!*CUSTOMER@!@ACCOUNT*!*DATE_CALC@!@DATE_CALC*!*BILL_NAME@!@BILL_NAME*!*BILL_ADDRESS1@!@BILL_ADDRESS1*!*BILL_ADDRESS2@!@BILL_ADDRESS2*!*BILL_ADDRESS3@!@BILL_ADDRESS3*!*BILL_ADDRESS4@!@BILL_ADDRESS4*!*BILL_ADDRESS5@!@BILL_ADDRESS5*!*INTL@!@INTL*!*BILL_CITY@!@BILL_CITY*!*BILL_STATE@!@BILL_STATE*!*BILL_ZIP@!@BILL_ZIP*!*BILL_COUNTRY@!@BILL_COUNTRY*!*ATTN@!@ATTN*!*DATE_TRANSACTION@!@DATE_TRANSACTION*!*DUE_DATE@!@DUE_DATE*!*INVOICE@!@INVOICE*!*TRANS_TYPE@!@TYPE*!*REFERENCE@!@PO*!*CHARGES@!@CHARGES*!*CREDITS@!@CREDITS*!*TOT_CHARGES@!@TOT_CHGS*!*TOT_CREDITS@!@TOT_CREDITS*!*TOT_CURRENT@!@TOT_CURRENT*!*TOT_THIRTY@!@TOT_30*!*TOT_SIXTY@!@TOT_60*!*TOT_MORE@!@TOT_MORE*!*TOT_DUE@!@TOT_DUE*!*PHONE@!@PHONE*!*FAX@!@FAX*!*CURR_SYMBOL@!@CURR_SYMBOL")
+	
+	F.Data.DataTable.SaveToDB("dtStatements", "conx", "GCG_5979_AR_STMNT", "", 128, V.Local.sMapping)
+	
+	Gui.Form..Visible(False)
+	
+	F.Global.BI.StopLogging(V.Local.iLogID)
+	
+	F.Global.BI.RunReportPreProcessor(V.Local.iBIRunID, V.Local.iLogID, "", "", "", -1, True, "", -1, "", -1, "", "", V.Local.iReturn)
+	
+	F.Intrinsic.Control.CallSub(Unload)
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+	F.Intrinsic.Control.CallSub(Unload)
+F.Intrinsic.Control.EndTry
+Program.Sub.PrintStatements.End
+
+Program.Sub.CheckAll.Start
+F.Intrinsic.Control.Try
+	V.Local.sError.Declare(String, "")
+	
+	'If they check the "All Customers" checkbox, we want to either enable or disable browse buttons and textboxes
+	Gui.Form.cmdFromBrow.Enabled(V.Screen.Form!chkAllCust.Value.Not)
+	Gui.Form.cmdToBrow.Enabled(V.Screen.Form!chkAllCust.Value.Not)
+	Gui.Form.txtBegCust.Enabled(V.Screen.Form!chkAllCust.Value.Not)
+	Gui.Form.txtEndCust.Enabled(V.Screen.Form!chkAllCust.Value.Not)
+	
+F.Intrinsic.Control.Catch
+	F.Intrinsic.String.Build("Project: {0}{1}{1}Subroutine: {2}{1}Error Occurred {3} with description {4}{1}{1}GAB Version: {5}",V.Ambient.ScriptPath,V.Ambient.Newline,V.Ambient.CurrentSubroutine,V.Ambient.ErrorNumber,V.Ambient.ErrorDescription,V.Ambient.GABVersion,V.Local.sError)
+	F.Intrinsic.UI.Msgbox(V.Local.sError)
+F.Intrinsic.Control.EndTry
+Program.Sub.CheckAll.End
